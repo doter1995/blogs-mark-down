@@ -1,0 +1,60 @@
+# ease
+设置[过渡方式](https://github.com/xswei/d3js_doc/tree/master/API/d3-ease-master)
+
+# [d3-transition](https://github.com/xswei/d3js_doc/tree/master/API/d3-transition-master)
+简单的例子
+```
+//1
+rects.transition()
+        .duration(130)
+        .attr('y', function (d, i) { return 200 - y(d) })
+        .attr('height', function (d, i) { return y(d) })
+//2
+var t = d3.transition()
+    .duration(750)
+    .ease(d3.easeLinear);
+
+d3.selectAll(".apple").transition(t)
+    .style("fill", "red");
+
+d3.selectAll(".orange").transition(t)
+    .style("fill", "orange");
+```
+### interrupt([name])
+中断选择集上活动的名为name的过渡。如果name所表示的过渡还没有开始，则也不用开始了。如果没有指定name,则使用null。
+### filter(filter)
+对过渡集中的元素进行过滤
+### merge(other)
+合并两个过渡集,等价
+```
+transition
+  .selection()
+  .merge(other.selection())
+  .transition(transition)
+```
+### d3.active(node[, name])
+返回指定节点上名为name的活动的过渡。如果没有指定name则使用null。这个方法可以方便的创建链式过渡，比如创建一个循环disco过渡:
+```
+d3.selectAll("circle").transition()
+    .delay(function(d, i) { return i * 50; })
+    .on("start", function repeat() {
+        d3.active(this)
+            .style("fill", "red")
+          .transition()
+            .style("fill", "green")
+          .transition()
+            .style("fill", "blue")
+          .transition()
+            .on("start", repeat);
+      });
+```
+### delay()
+设置或获取延迟时间
+ ```
+transition.delay(function(d, i) { return i * 10; });
+```
+
+
+### 后注
+一旦创建好了一个过渡效果，就不能再改变了
+如果一个元素的一个属性正在进行过渡，此时又开始了这个属性的另一个过渡，则之前的过渡会被终止。

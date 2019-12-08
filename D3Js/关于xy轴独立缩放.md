@@ -1,0 +1,109 @@
+最近一两个月在学车，上班，找工作。感觉可能大学可能是最适合自学时间，挺怀念大学暑假待在学校实验室，每天吃饭睡觉，其余时间都在学习代码。庆幸自己找到了一个不错的offer，为此接下来的生活有变为学车，上班，做毕设。本来计划将之前研究的xy轴独立缩放封装成库，奈何现在时间太过紧张，暂时现将思路记录下来，后期有机会在补充。
+首先d3js的zoom库，其核心思想是
+```javascript
+{
+  k:1,  //缩放比例
+  x:0,  //x的偏移量
+  y:0  //y的偏移量
+}
+```
+
+独立缩放举例：
+x轴放大一倍，y轴放大一倍，xy同时放大一倍
+
+|-|-|-|-|
+|-|-|-|-|
+|k|2|4|8|
+|kx|2|2|4|
+|ky|1|2|4|
+
+根据数据很简单的明白独立缩放的能解决的问题，起初采用算法辅助计算，涉及到xy的偏移量，计算难度过大。
+最终通过抓取源码，实现复制缩放比例值实现。
+[demo](https://doter1995.github.io/d3/MQVisWidget/demo/)(ps:alt控制y，shift控制x)
+![image.png](https://upload-images.jianshu.io/upload_images/3967890-08d7739d61293384.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+源码中的zoomTool和Transform,是将d3中对应源码删减的。
+```javascript
+ function zoomed() {
+ 
+    // 构建新X比例尺
+    var xz = _xz
+    // 构建新Y比例尺
+    var yz = _yz
+    var imove = false
+    if(d3.event.type=='wheel'){
+      var wheel = d3.event.deltaY
+      var old__X = transformX.copy()
+      var old__Y = transformY.copy()
+      var p = d3.mouse(this)
+      mouseX=[p,old__X.invert(p)]
+      mouseY=[p,old__Y.invert(p)]
+      
+      //获取到wheel事件。
+      //变换K
+      var WheelDelta = ZoomTool.getWheelDelta(d3.event)
+      if(!changeY){
+        transformX.k = ZoomTool.wheelToK(transformX.k,WheelDelta,scaleExtent)
+        //变换x y
+        // constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent, translateExtent);
+        transformX = ZoomTool.translate(transformX,mouseX[0],mouseX[1])
+        transformX = ZoomTool.constrain(transformX,Extent,translateExtent)
+        xz = transformX.rescaleX(_X)
+      }
+      if(!changeX){
+        transformY.k = ZoomTool.wheelToK(transformY.k,WheelDelta,scaleExtent)
+        //变换x y
+        // constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent, translateExtent);
+        transformY = ZoomTool.translate(transformY,mouseY[0],mouseY[1])
+        transformY = ZoomTool.constrain(transformY,Extent,translateExtent)
+        yz=transformY.rescaleY(_Ymain.Y)
+      }
+      
+    }else if(d3.event.type=='mousedown'){
+      var old__X = transformX.copy()
+      var old__Y = transformY.copy()
+      var event = d3.event
+      var moved=false
+      var p = d3.mouse(this)
+      var  x0 = event.clientX
+      var y0 = event.clientY
+      mouseX=[p,old__X.invert(p)]
+      mouseY=[p,old__Y.invert(p)]
+      d3.select(this).on('mousemove.zoom',mousemove)
+      .on("mouseup.zoom", mouseupped, true)
+      function mousemove(){
+        var xingtest = (new Date()).valueOf()
+        
+          if (!moved) {
+              var dx = event.clientX - x0, dy = event.clientY - y0;
+              moved = dx * dx + dy * dy > 0;
+          }
+          mouseX[0] = d3.mouse(this)
+          mouseY[0] = d3.mouse(this)
+          if(!changeY){
+            transformX=ZoomTool.translate(transformX,mouseX[0],mouseX[1])
+            transformX = ZoomTool.constrain(transformX,Extent,translateExtent)
+            var p = d3.mouse(this)
+            mouseX=[p,transformX.invert(p)]
+            xz = transformX.rescaleX(_X)
+          }
+          if(!changeX){
+            transformY=ZoomTool.translate(transformY,mouseY[0],mouseY[1])
+            transformY = ZoomTool.constrain(transformY,Extent,translateExtent)
+            var p = d3.mouse(this)
+            mouseY=[p,transformY.invert(p)]
+            yz=transformY.rescaleY(_Ymain.Y)
+          }
+          zoomform(xz,yz,d3.mouse(this))
+      }
+      function mouseupped(){
+          d3.select(this).on('mousemove.zoom',null);
+      }
+    }else{
+      return
+    }
+    zoomform(xz,yz,d3.mouse(this))
+  }
+```
+以上为核心出代码，具体请[移步源码](https://github.com/doter1995/doter1995.github.io/tree/master/d3/MQVisWidget/src)
+
+欢迎转载，转载请注明原作者：doter1995
