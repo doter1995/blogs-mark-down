@@ -1,9 +1,12 @@
 # Adservice
+
 ## 数据库使用mysql
-### orm 使用Sequelize  
+
+### orm 使用Sequelize
+
 #### 表映射使用 sequelize-auto
 
-``` 
+```text
   npm install -g sequelize-auto
   npm install -g mysql
 
@@ -26,9 +29,13 @@ Options:
   -s, --schema      Database schema from which to retrieve tables
 
 ```
+
 例如：
+
 ```bash
 sequelize-auto -o "./models" -d ad -h localhost -u root -p 3306 -x doter1995 -e mysql
 ```
+
 ## 由于sequelize默认情况下回自动创建两个列 creatAt和updateAt
-  所以需要提前在表中创建 ，或者需要配置取消creatAt和updateAt
+
+所以需要提前在表中创建 ，或者需要配置取消creatAt和updateAt
